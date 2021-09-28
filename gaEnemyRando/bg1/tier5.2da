@@ -1,0 +1,10 @@
+Name                CRE         Anim    XP/Power    XP
+GreaterBasilisk     BASILG      0x7101  80          7000
+LesserBasilisk      BASILL      0x7100  50          1400
+GreaterDoppleganger DOPPGR      0x7501  80          4000
+FleshGolem          GOLEMF      0x7001  250         2000
+MustardJelly        JELLMU      0x7902  60          2000
+OchreJelly          JELLOC      0x7903  60          270
+SkeletonWarrior     SKELWA      0x6403  90          4000
+SkeletonWarrior     SKELWA02    0x6403  90          4000
+SkeletonWarrior     SKELWA03    0x6403  90          4000
