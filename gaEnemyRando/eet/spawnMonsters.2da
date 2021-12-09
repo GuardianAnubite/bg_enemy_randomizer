@@ -217,7 +217,6 @@ GoblinCommando      ELEHOB01    0xE410  6           35
 KoboldCommando      ELEKOB01    0x8200  12          35
 KuotoanWarrior      ELEKUO01    0x7F0C  8           175
 KuotoanWhip         ELEKUO02    0x7F0C  8           420
-Troll               ELETRO01    0x7F00  28          1400
 TrollShaman         ELETRO02    0x7F00  28          1400
 Troll               eletro03    0x7F00  28          1400
 LessFireElemental   ELFIRL01    0x7311  250         2000

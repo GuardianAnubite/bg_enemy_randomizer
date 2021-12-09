@@ -1,11 +1,22 @@
 BACKUP ~gaEnemyRando/backup~
 AUTHOR ~GuardianAnubite~
-VERSION ~V0.75~
+VERSION ~V1.00~
 README ~gaEnemyRando/readme.txt~
 AUTO_TRA ~gaEnemyRando/tra/%s~
 
 ALWAYS
     DEFINE_ACTION_FUNCTION spawnRandomizer STR_VAR path = ~blah~ BEGIN
+    
+        // read viable cre files from the matching 2da file and put them into an array
+        OUTER_SET count = 0
+        COPY ~%path%/spawnMonsters.2da~ ~%path%/spawnMonsters.2da~
+            COUNT_2DA_ROWS 5 rows
+            FOR (index = 1 ; index < rows ; ++index) BEGIN
+                READ_2DA_ENTRY index 1 5 cre
+                DEFINE_ASSOCIATIVE_ARRAY array_cre   BEGIN "%count%" => "%cre%" END
+                SET count += 1
+            END
+    
         OUTER_SET spawnPointSize = 0xc8 // the size of each spawn point 
         OUTER_SET spawnWeightOffset = 0x98 // the distance between the start of a spawn point and the weights
         OUTER_SET spawnCreatureOffset = 0x24 // the distance between the start of a spawn point and the creatures
@@ -31,18 +42,11 @@ ALWAYS
                     // fill out all 10 creature slots
                     FOR (j = 0; j < 10; j += 1) BEGIN
             
-                        INNER_ACTION BEGIN
-                            COPY ~%path%/spawnMonsters.2da~ ~%path%/spawnMonsters.2da~
-                
-                            // generate random number and pick matching entry from .2da file
-                            COUNT_2DA_ROWS 4 rows
-                            SET picker = RANDOM(2 %rows%)
-                
-                            READ_2DA_ENTRY %picker% 1 4 newCRE
-                            //PATCH_PRINT ~New CRE is %newCRE%~
-                        END // end inner_action
-
-                        //PATCH_PRINT ~Main loop - New CRE is %newCRE%~
+                        // generate random number and pick matching entry from cre array
+                        SET picker = RANDOM(1 %count%)
+                        SPRINT newCRE $array_cre(~%picker%~)
+                        //PATCH_PRINT ~New CRE is %newCRE%~
+                        
                         // set creatures 1-10 to new values
                         WRITE_ASCIIE (spawnPointStart + spawnCreatureOffset + (0x8 * j)) ~%newCRE%~ #8
                         // set spawn weights 1-10 to be equal
@@ -53,7 +57,22 @@ ALWAYS
     END
     
     
-    DEFINE_ACTION_FUNCTION restRandomizer STR_VAR path = ~blah~ BEGIN
+    DEFINE_ACTION_FUNCTION restRandomizer STR_VAR path = ~blah~ includeCI = ~1~ BEGIN
+    
+        // read viable cre files from the matching 2da file and put them into an array
+        OUTER_SET count = 0
+        COPY ~%path%/spawnMonsters.2da~ ~%path%/spawnMonsters.2da~
+            COUNT_2DA_ROWS 5 rows
+            FOR (index = 1 ; index < rows ; ++index) BEGIN
+                READ_2DA_ENTRY index 1 5 cre
+                //SPRINT $array_cre(%count%) ~%cre%~
+                DEFINE_ASSOCIATIVE_ARRAY array_cre   BEGIN "%count%" => "%cre%" END
+                //SPRINT testCRE $array_cre(%count%)
+                //PATCH_PRINT ~Sprint cre is %testCRE%~
+                //PATCH_PRINT ~Array cre is $array_cre(%count%)~
+                SET count += 1
+            END
+    
         OUTER_SET stringOffset = 0x20 // where the strings for monster attacks are
         OUTER_SET restCountOffset = 0x98 // where the count of creatures (we want 10) is
         OUTER_SET creOffset = 0x48 // where the links to creature files are
@@ -64,35 +83,32 @@ ALWAYS
             // skip city or indoor locations
             READ_SHORT 0x48 location
             READ_ASCII 0x8 areaName
+            
+        PATCH_IF ((~%areaName%~ STRING_CONTAINS_REGEXP ~AR0601~ AND ~%areaName%~ STRING_CONTAINS_REGEXP ~AR0602~ AND ~%areaName%~ STRING_CONTAINS_REGEXP ~AR0603~) OR includeCI) BEGIN
     
-        PATCH_IF ((location & BIT3) = 0) AND (location != 0) BEGIN
+            PATCH_IF ((location & BIT3) = 0) AND (location != 0) BEGIN
     
-            //PATCH_PRINT ~Area name is %areaName%~
-            //PATCH_PRINT ~Location code is %location%~
+                //PATCH_PRINT ~Area name is %areaName%~
+                //PATCH_PRINT ~Location code is %location%~
       
-            READ_LONG 0xc0 restOffset
-            PATCH_IF (restOffset != 0) BEGIN
-                WRITE_SHORT (restOffset + restCountOffset) 10
+                READ_LONG 0xc0 restOffset
+                PATCH_IF (restOffset != 0) BEGIN
+                    WRITE_SHORT (restOffset + restCountOffset) 10
     
-                // fill out the 10 creature slots + strings
-                FOR (i = 0; i < 10; i += 1) BEGIN
-                    SET stringLocation = restOffset + stringOffset + (i * 0x4)
-                    SET creLocation = restOffset + creOffset + (i * 0x8)
+                    // fill out the 10 creature slots + strings
+                    FOR (i = 0; i < 10; i += 1) BEGIN
+                        SET stringLocation = restOffset + stringOffset + (i * 0x4)
+                        SET creLocation = restOffset + creOffset + (i * 0x8)
     
-                    WRITE_LONG stringLocation 10134 // set monster string to the generic values
+                        WRITE_LONG stringLocation 10134 // set monster string to the generic values
         
-                    INNER_ACTION BEGIN
-                        COPY ~%path%/spawnMonsters.2da~ ~%path%/spawnMonsters.2da~
-                    
-                        // generate random number and pick matching entry from .2da file
-                        COUNT_2DA_ROWS 4 rows
-                        SET picker = RANDOM(2 %rows%)
-                        // PATCH_PRINT ~Random seed %i% %j% is %picker%~
-                    
-                        READ_2DA_ENTRY %picker% 1 4 newCRE
+                        // generate random number and pick matching entry from cre array
+                        SET picker = RANDOM(1 %count%)
+                        SPRINT newCRE $array_cre(~%picker%~)
                         //PATCH_PRINT ~New CRE is %newCRE%~
-                    END // end inner_action
-                WRITE_ASCIIE creLocation ~%newCRE%~ #8
+       
+                        WRITE_ASCIIE creLocation ~%newCRE%~ #8
+                    END
                 END
             END
         END
@@ -100,65 +116,55 @@ ALWAYS
     END
     
     
-    DEFINE_ACTION_FUNCTION setRandomizer STR_VAR path = ~blah~ BEGIN
+    DEFINE_ACTION_FUNCTION setRandomizer STR_VAR path = ~blah~ includeCI = ~1~ BEGIN
+    
+        // read viable cre files from the matching 2da file and put them into an array
+        OUTER_SET count = 0
+        COPY ~%path%~ ~%path%~
+            COUNT_2DA_ROWS 5 rows
+            FOR (index = 1 ; index < rows ; index += 1) BEGIN
+                READ_2DA_ENTRY index 1 5 cre
+                DEFINE_ASSOCIATIVE_ARRAY array_cre   BEGIN "%count%" => "%cre%" END
+                DEFINE_ASSOCIATIVE_ARRAY array_cre_check   BEGIN "%cre%" => 1 END
+                SET count += 1
+            END
     
         COPY_EXISTING_REGEXP GLOB ~^.+\.are$~ ~override~
+        
+            READ_ASCII 0x8 areaName
     
-        READ_LONG 0x54 actorsOffset // find the location of actors in the area file
-        READ_SHORT 0x58 numberActors // find the number of actors
+            PATCH_IF ((~%areaName%~ STRING_CONTAINS_REGEXP ~AR0601~ AND ~%areaName%~ STRING_CONTAINS_REGEXP ~AR0602~ AND ~%areaName%~ STRING_CONTAINS_REGEXP ~AR0603~) OR includeCI) BEGIN
     
-        // loop for each actor in the file
-        FOR (i = 0; i < numberActors; i += 1) BEGIN
-            SET actorLocation = actorsOffset + (i * 0x110) //actor location in file
-            SET animLocation = actorLocation + 0x30 // location of the actor animation
-            SET creLocation = actorLocation + 0x80 // location of the actor CRE file
+            READ_LONG 0x54 actorsOffset // find the location of actors in the area file
+            READ_SHORT 0x58 numberActors // find the number of actors
+    
+            // loop for each actor in the file
+            FOR (i = 0; i < numberActors; i += 1) BEGIN
+                SET actorLocation = actorsOffset + (i * 0x110) //actor location in file
+                SET animLocation = actorLocation + 0x30 // location of the actor animation
+                SET creLocation = actorLocation + 0x80 // location of the actor CRE file
         
-            READ_ASCII creLocation creFile // read the CRE file for the actor
-            SET update = 0
-        
-            // search in 2da files for matching CRE file, if found then randomly pick replacement
-            INNER_ACTION BEGIN
-        
-                ACTION_BASH_FOR ~%path%/~ ~^.+\.2da$~ BEGIN
-                    COPY "%BASH_FOR_FILESPEC%" "%BASH_FOR_FILESPEC%"
+                READ_ASCII creLocation creFile // read the CRE file for the actor
                 
-                    // check to see if creFile is in 2da file 
-                    COUNT_REGEXP_INSTANCES CASE_INSENSITIVE EVALUATE_REGEXP ~ %creFile% ~ match // find number of matches for old CRE file
-                  
-                    //PATCH_PRINT ~Number of matches is %match%~  
-                  
-                    // if match isn't 0, pick new monster
-                    PATCH_IF (match > 0) BEGIN
-                
-                        //PATCH_PRINT ~Current creFile is %creFile%~
-                
-                        SET update = 1
-                        COUNT_2DA_ROWS 4 rows
+                PATCH_IF(VARIABLE_IS_SET $array_cre_check(~%creFile%~)) BEGIN
+                    SET picker = RANDOM(0 (%count% - 1))
+                    SPRINT newCRE $array_cre(~%picker%~)
+                    //PATCH_PRINT ~New CRE is %newCRE%~
                     
-                        //PATCH_PRINT ~Number of rows in 2da file is %rows%~
+                    INNER_ACTION BEGIN
+                        COPY_EXISTING "%newCRE%.CRE" "override"
+                        READ_LONG 0x28 newAnim // read new animation value from CRE to update in ARE file
                     
-                        SET picker = RANDOM(2 rows)
-                        // read name, animation, and cre file from 2da for picker row
-                        //READ_2DA_ENTRY %picker% 0 4 newName
-                        READ_2DA_ENTRY %picker% 1 4 newCRE
-                        READ_2DA_ENTRY %picker% 2 4 newAnim
+                    END
+                    
+                    // update actor animation, and cre file
+                    WRITE_ASCIIE creLocation ~%newCRE%~ #8
+                    WRITE_LONG animLocation %newAnim%
                 
-                        //PATCH_PRINT ~New animation is %newAnim%~
-                        //PATCH_PRINT ~New CRE is %newCRE%~
-                    END  
-                    BUT_ONLY
                 END
             END
-        
-            PATCH_IF (update != 0) BEGIN
-                // update actor animation, and cre file
-                WRITE_ASCIIE creLocation ~%newCRE%~ #8
-                WRITE_LONG animLocation %newAnim%
-            END    
         END
     END
-    
-    
 END
 
 LANGUAGE English english "gaEnemyRando/tra/english/setup.tra"
@@ -199,30 +205,49 @@ BEGIN ~BG creatures only~
 SUBCOMPONENT ~BG1 Rest Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~totsc bgee tutu_totsc~ ~Requires BG1~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg1~ END
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg1~ includeCI = ~1~ END
 
 BEGIN ~With SoD creatures (Makes BG1 slightly tougher)~
 SUBCOMPONENT ~BG1 Rest Encounter Randomizer~
 REQUIRE_PREDICATE GAME_INCLUDES ~sod~ ~Requires SoD~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod~ END
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod~ includeCI = ~1~ END
 
-BEGIN ~BG2 Rest Encounter Randomizer~
+BEGIN ~Include starting dungeon~
+SUBCOMPONENT ~BG2 Rest Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg2~ END
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg2~ includeCI = ~1~ END
 
-BEGIN ~With SoD creatures (Makes BG1 slightly tougher)~
+BEGIN ~Exclude starting dungeon~
+SUBCOMPONENT ~BG2 Rest Encounter Randomizer~
+REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/bg2~ includeCI = ~0~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Exclude Chateau Irenicus~
 SUBCOMPONENT ~EET Rest Encounter Randomizer~
 REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet/sod~ END  
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet/sod~ includeCI = ~0~ END  
 
-BEGIN ~Without SoD creatures~
+BEGIN ~Without SoD creatures - Exclude Chateau Irenicus~
 SUBCOMPONENT ~EET Rest Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet~ END
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet~ includeCI = ~0~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Include Chateau Irenicus~
+SUBCOMPONENT ~EET Rest Encounter Randomizer~
+REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet/sod~ includeCI = ~1~ END  
+
+BEGIN ~Without SoD creatures - Include Chateau Irenicus~
+SUBCOMPONENT ~EET Rest Encounter Randomizer~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet~ includeCI = ~1~ END
 
 
 
@@ -230,27 +255,100 @@ BEGIN ~BG creatures only~
 SUBCOMPONENT ~BG1 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_IS ~totsc bgee tutu_totsc~ ~Requires BG1~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier1.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier2.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier3.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier4.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier5.2da~ includeCI = ~1~ END
 
 BEGIN ~With SoD creatures (Makes BG1 slightly tougher)~
 SUBCOMPONENT ~BG1 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_INCLUDES ~sod~ ~Requires SoD~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier1.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier2.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier3.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier4.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier5.2da~ includeCI = ~1~ END
 
-BEGIN ~BG2 Set Creature Randomizer~
+BEGIN ~Include starting dungeon~
+SUBCOMPONENT ~BG2 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier1.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier2.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier3.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier4.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier5.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier6.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier7.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier8.2da~ includeCI = ~1~ END
 
-BEGIN ~With SoD creatures (Makes BG1 slightly tougher)~
-SUBCOMPONENT ~EET Set Creature Randomizer~
+BEGIN ~Exclude starting dungeon~
+SUBCOMPONENT ~BG2 Set Creature Randomizer~
+REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier1.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier2.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier3.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier4.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier5.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier6.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier7.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier8.2da~ includeCI = ~0~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Exclude Chateau Irenicus~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod~ END  
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier1.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier2.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier3.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier4.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier5.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier6.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier7.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier8.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier9.2da~ includeCI = ~0~ END  
 
-BEGIN ~Without SoD creatures~
-SUBCOMPONENT ~EET Set Creature Randomizer~
+BEGIN ~Without SoD creatures - Exclude Chateau Irenicus~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
 RANDOM_SEED 3.14
-LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier1.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier2.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier3.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier4.2da~ includeCI = ~0~ END 
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier5.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier6.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier7.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier8.2da~ includeCI = ~0~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier9.2da~ includeCI = ~0~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Include Chateau Irenicus~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier1.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier2.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier3.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier4.2da~ includeCI = ~1~ END 
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier5.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier6.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier7.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier8.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier9.2da~ includeCI = ~1~ END  
+
+BEGIN ~Without SoD creatures - Include Chateau Irenicus~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier1.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier2.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier3.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier4.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier5.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier6.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier7.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier8.2da~ includeCI = ~1~ END
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier9.2da~ includeCI = ~1~ END
