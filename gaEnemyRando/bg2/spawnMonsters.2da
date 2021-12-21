@@ -107,7 +107,7 @@ Zombie              GTCIT3      0x7D00  5           65
 Zombie              GTCIT4      0x7D00  5           65
 Zombie              GTCIT5      0x7D00  5           65
 HellHound           HELLHO01    0x7B02  14          1400
-HellHound           HELLJL01    0x7B02  14          1400
+HellHound           HELLIL01    0x7B02  14          1400
 SkeletonWarrior     HGSKL04     0xEB10  70          10000
 HobgoblinArcher     HOBARC01    0x8100  6           35
 HobgoblinArcher     HOBARC02    0x8100  6           35
