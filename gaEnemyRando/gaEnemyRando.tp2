@@ -27,7 +27,7 @@ ALWAYS
             READ_ASCII 0x8 areaName
     
             //Exclude High Hedge outside since the Melicamp quest needs specific skeletons to spawn
-            PATCH_IF (~%areaName%~ STRING_CONTAINS_REGEXP ~AR3200~) BEGIN
+            PATCH_IF ((~%areaName%~ STRING_CONTAINS_REGEXP ~AR3200~) AND (~%areaName%~ STRING_CONTAINS_REGEXP ~BG3200~)) BEGIN
     
                 READ_LONG 0x60 spawnOffset // read starting position of the spawn points in file
                 READ_LONG 0x64 spawnPoints // read the number of spawn points
@@ -43,7 +43,7 @@ ALWAYS
                     FOR (j = 0; j < 10; j += 1) BEGIN
             
                         // generate random number and pick matching entry from cre array
-                        SET picker = RANDOM(1 %count%)
+                        SET picker = RANDOM(0 (%count% - 1))
                         SPRINT newCRE $array_cre(~%picker%~)
                         //PATCH_PRINT ~New CRE is %newCRE%~
                         
@@ -103,7 +103,7 @@ ALWAYS
                         WRITE_LONG stringLocation 10134 // set monster string to the generic values
         
                         // generate random number and pick matching entry from cre array
-                        SET picker = RANDOM(1 %count%)
+                        SET picker = RANDOM(0 (%count% - 1))
                         SPRINT newCRE $array_cre(~%picker%~)
                         //PATCH_PRINT ~New CRE is %newCRE%~
        
