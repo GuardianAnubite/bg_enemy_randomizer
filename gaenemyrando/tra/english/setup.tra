@@ -1,5 +1,0 @@
-@1="Spawn Point Randomizer"
-@2="Rest Encounter Randomizer"
-@3="Set Enemy Randomizer"
-@4="This component is only available for versions of BG1"
-@5="Do you want to include SoD monsters in randomization? Press y for yes, anything else for no. (Including SoD enemies will make BG1 a bit harder.)"
