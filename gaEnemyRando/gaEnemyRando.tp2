@@ -251,7 +251,7 @@ LAUNCH_ACTION_FUNCTION restRandomizer STR_VAR path = ~gaEnemyRando/eet~ includeC
 
 
 
-BEGIN ~BG creatures only~
+BEGIN ~BG creatures only - Keep enemies roughly similar in power~
 SUBCOMPONENT ~BG1 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_IS ~totsc bgee tutu_totsc~ ~Requires BG1~
 RANDOM_SEED 3.14
@@ -261,7 +261,13 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier3.2da~
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier4.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/tier5.2da~ includeCI = ~1~ END
 
-BEGIN ~With SoD creatures (Makes BG1 slightly tougher)~
+BEGIN ~BG creatures only - Completely random~
+SUBCOMPONENT ~BG1 Set Creature Randomizer~
+REQUIRE_PREDICATE GAME_IS ~totsc bgee tutu_totsc~ ~Requires BG1~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/allMonsters.2da~ includeCI = ~1~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Keep enemies roughly similar in power~
 SUBCOMPONENT ~BG1 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_INCLUDES ~sod~ ~Requires SoD~
 RANDOM_SEED 3.14
@@ -271,7 +277,15 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier3.
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier4.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/tier5.2da~ includeCI = ~1~ END
 
-BEGIN ~Include starting dungeon~
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Completely random~
+SUBCOMPONENT ~BG1 Set Creature Randomizer~
+REQUIRE_PREDICATE GAME_INCLUDES ~sod~ ~Requires SoD~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg1/sod/allMonsters.2da~ includeCI = ~1~ END
+
+
+
+BEGIN ~Include starting dungeon - Keep enemies roughly similar in power~
 SUBCOMPONENT ~BG2 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
 RANDOM_SEED 3.14
@@ -284,7 +298,13 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier6.2da~
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier7.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier8.2da~ includeCI = ~1~ END
 
-BEGIN ~Exclude starting dungeon~
+BEGIN ~Include starting dungeon - Completely random~
+SUBCOMPONENT ~BG2 Set Creature Randomizer~
+REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/allMonsters.2da~ includeCI = ~1~ END
+
+BEGIN ~Exclude starting dungeon - Keep enemies roughly similar in power~
 SUBCOMPONENT ~BG2 Set Creature Randomizer~
 REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
 RANDOM_SEED 3.14
@@ -297,7 +317,15 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier6.2da~
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier7.2da~ includeCI = ~0~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/tier8.2da~ includeCI = ~0~ END
 
-BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Exclude Chateau Irenicus~
+BEGIN ~Exclude starting dungeon - Completely random~
+SUBCOMPONENT ~BG2 Set Creature Randomizer~
+REQUIRE_PREDICATE GAME_IS ~tob bg2ee~ ~Requires BG2~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/bg2/allMonsters.2da~ includeCI = ~0~ END
+
+
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Exclude Chateau Irenicus - Keep enemies roughly similar in power~
 SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
 RANDOM_SEED 3.14
@@ -311,7 +339,13 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier7.
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier8.2da~ includeCI = ~0~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier9.2da~ includeCI = ~0~ END  
 
-BEGIN ~Without SoD creatures - Exclude Chateau Irenicus~
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Exclude Chateau Irenicus - Completely random~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/allMonsters.2da~ includeCI = ~0~ END 
+
+BEGIN ~Without SoD creatures - Exclude Chateau Irenicus - Keep enemies roughly similar in power~
 SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
 RANDOM_SEED 3.14
@@ -325,7 +359,13 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier7.2da~
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier8.2da~ includeCI = ~0~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier9.2da~ includeCI = ~0~ END
 
-BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Include Chateau Irenicus~
+BEGIN ~Without SoD creatures - Exclude Chateau Irenicus - Completely random~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/allMonsters.2da~ includeCI = ~0~ END
+
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Include Chateau Irenicus - Keep enemies roughly similar in power~
 SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
 RANDOM_SEED 3.14
@@ -339,7 +379,13 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier7.
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier8.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/tier9.2da~ includeCI = ~1~ END  
 
-BEGIN ~Without SoD creatures - Include Chateau Irenicus~
+BEGIN ~With SoD creatures (Makes BG1 slightly tougher) - Include Chateau Irenicus - Completely random~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE (GAME_INCLUDES ~sod~ AND GAME_IS ~eet~) ~Requires EET and SoD~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/sod/allMonsters.2da~ includeCI = ~1~ END
+
+BEGIN ~Without SoD creatures - Include Chateau Irenicus - Keep enemies roughly similar in power~
 SUBCOMPONENT ~EET Set Encounter Randomizer~
 REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
 RANDOM_SEED 3.14
@@ -352,3 +398,9 @@ LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier6.2da~
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier7.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier8.2da~ includeCI = ~1~ END
 LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/tier9.2da~ includeCI = ~1~ END
+
+BEGIN ~Without SoD creatures - Include Chateau Irenicus - Completely random~
+SUBCOMPONENT ~EET Set Encounter Randomizer~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~Requires EET~
+RANDOM_SEED 3.14
+LAUNCH_ACTION_FUNCTION setRandomizer STR_VAR path = ~gaEnemyRando/eet/allMonsters.2da~ includeCI = ~1~ END
