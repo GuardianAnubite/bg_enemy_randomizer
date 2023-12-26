@@ -8,8 +8,6 @@ BrownBear           BEARBR      0x7201  25          420
 CaveBear            BEARCA      0x7202  40          650
 PolarBear           BEARPO      0x7203  50          900
 CarrionCrawler      CARRIO      0xA100  25          420
-Panther             catjag01    0x7F0A  14          420
-MountainLion        catlim01    0x750B  14          270
 CryptCrawler        CRYPTCRA    0xA100  25          420
 BlinkDog            DOGBLINK    0x7400  4           270
 WarDog              DOGWA       0x7401  8           65
