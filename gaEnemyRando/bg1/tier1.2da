@@ -1,5 +1,5 @@
 Name                CRE         Anim    XP/Power    XP
-Bandit              Bandit      0x6100  6           65
+Bandit              BANDIT      0x6100  6           65
 BlinkDog            DOGBLINK    0x7400  4           270
 WarDog              DOGWA       0x7401  8           65
 WildDog             DOGWI       0x7400  4           35
@@ -82,7 +82,6 @@ Skeleton            SKELET03    0x6403  5           65
 Skeleton            SKELET_A    0x6403  5           65
 Skeleton            SKELET_B    0x6403  5           65
 Skeleton            SKELET_C    0x6403  5           65
-SmallSpider         spidsm01    0x7F2F  5           65
 Wolf                WOLF        0x7B00  7           65
 Xvart               XVART       0x7C00  4           15 
 Xvart               XVART02     0x7C00  4           15 
