@@ -445,7 +445,6 @@ Spectraltroll       TROLSP01    0xE0B0  28          3500
 BrainGolem          UDGOLEM     0x7F07  250         10000
 MindFlayer          UDILL01     0x7F01  0           9000
 UmberHulk           UDILL02     0x7F11  28          4000
-UmberHulk           UDUMB02     0x7F11  28          4000
 UmberHulk           UDUMBER     0x7F11  28          4000
 UmberHulk           UMBHUL01    0x7F11  28          4000
 UmberHulkElder      UMBHUL02    0x7F11  11000       18000
