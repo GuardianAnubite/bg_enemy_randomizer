@@ -20,5 +20,3 @@ WraithSpider        SPIDWR      0x7A04  40          1400
 BabyWyvern          WYVERBA     0xA000  45          450
 Wyvern              WYVERN      0x1000  45          1400
 GreaterWyvern       WYVERNBI    0x1000  45          5000
-Troll               troll01     0x7F00  28          1400
-GiantTroll          trollgi     0xE0C0  32          1600
